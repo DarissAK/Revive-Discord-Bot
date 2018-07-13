@@ -25,88 +25,112 @@ bot.on('message', message => {
 bot.on('ready', () => {
     console.log('I am ready!');
     let guild = bot.guilds.find(val => val.id === myConfig.guildID);
-	//console.log(guild.roles);
+    //console.log(guild.roles);
 });
 
 bot.on('guildMemberAdd', (member) => {
     let guild = bot.guilds.find(val => val.id === myConfig.guildID);
     if (guild.available) {
-        guild.fetchMembers() 
-			.then(() => {
-				console.log(possibleAppTags);
-				for (var i = 0; i < possibleAppTags.length; i++) {
-					if (member.user.username === possibleAppTags[i][0] && member.user.discriminator === possibleAppTags[i][1]) {
-					  console.log(member.user.id + ' username of ' + member.user.username + "#" + member.user.discriminator + ' matched user we are looking for ' + possibleAppTags[i][0] + "#" +  possibleAppTags[i][1]);
-					  //member.send(`@${member.user.username}#${member.user.discriminator} We've been looking for you, welcome to the Baddies US-Stormreaver discord server. You'll be automatically moved to your application discussion shortly.`);
-					  createApplicantUserChannel(member, i);
-					}
-				}
-		  }).catch(console.error);
+        guild.fetchMembers()
+            .then(() => {
+                console.log(possibleAppTags);
+                for (var i = 0; i < possibleAppTags.length; i++) {
+                    if (member.user.username === possibleAppTags[i][0] && member.user.discriminator === possibleAppTags[i][1]) {
+                        console.log(member.user.id + ' username of ' + member.user.username + "#" + member.user.discriminator + ' matched user we are looking for ' + possibleAppTags[i][0] + "#" + possibleAppTags[i][1]);
+                        //member.send(`@${member.user.username}#${member.user.discriminator} We've been looking for you, welcome to the Baddies US-Stormreaver discord server. You'll be automatically moved to your application discussion shortly.`);
+                        createApplicantUserChannel(member, i);
+                    }
+                }
+            }).catch(console.error);
     }
 });
 
 const createApplicantUserChannel = (member, i) => {
-	
-	let guild = bot.guilds.find(val => val.id === myConfig.guildID);
+
+    let guild = bot.guilds.find(val => val.id === myConfig.guildID);
     let _this = this;
     if (guild.available) {
         const channelName = possibleAppTags[i][2]
         const formattedTag = possibleAppTags[i][2]
-        const permissions = [
-			{ id: '467141832128725007', type: 'role', deny: 3072, allow: 0 },
-			{ id: '467211944185823233', type: 'role', deny: 0, allow: 3072 }
-		];
-		//guild.createChannel(channelName, 'text');
-		let appCategory = "applications";
-		let appChannel = bot.channels.find("name", appCategory);
+        const permissions = [{
+                id: '467141832128725007',
+                type: 'role',
+                deny: 3072,
+                allow: 0
+            },
+            {
+                id: '467211944185823233',
+                type: 'role',
+                deny: 0,
+                allow: 3072
+            }
+        ];
+        //guild.createChannel(channelName, 'text');
+        let appCategory = "applications";
+        let appChannel = bot.channels.find("name", appCategory);
         guild.createChannel(channelName, 'text', permissions)
             .then(channel => {
-				channel.setParent(appChannel);
-				//channel.send(`@everyone New application please review.`);
-				//channel.send('Application data here, or URL to app');
-				member.addRole(myConfig.applicantRoleID)
-				.then((member) => {
-					channel.overwritePermissions(member, {
-							SEND_MESSAGES: true,
-							READ_MESSAGES: true,
-							EMBED_LINKS: true,
-							READ_MESSAGE_HISTORY: true,
-							ATTACH_FILES: true
-					})
-					.then(() => {
-						member.setNickname(possibleAppTags[i][2])
-							.then((applicant) => {
-								channel.send(`Hello ${applicant.user}, we've been looking for you. Welcome to the Baddies US-Stormreaver discord server.`);
-								channel.send(`${applicant.user} Thanks for applying to Baddies. You can find your application here <link>. This thread will be used for app discussion. Please feel free to ask any questions.`);
-							})
-							.catch(console.error);
-					}).catch(console.error);
-				}).catch(console.error);
-		}).catch(console.error());	
+                channel.setParent(appChannel);
+                //channel.send(`@everyone New application please review.`);
+                //channel.send('Application data here, or URL to app');
+                member.addRole(myConfig.applicantRoleID)
+                    .then((member) => {
+                        channel.overwritePermissions(member, {
+                                SEND_MESSAGES: true,
+                                READ_MESSAGES: true,
+                                EMBED_LINKS: true,
+                                READ_MESSAGE_HISTORY: true,
+                                ATTACH_FILES: true
+                            })
+                            .then(() => {
+                                member.setNickname(possibleAppTags[i][2])
+                                    .then((applicant) => {
+                                        channel.send(`Hello ${applicant.user}, we've been looking for you. Welcome to the Baddies US-Stormreaver discord server.`);
+                                        channel.send(`${applicant.user} Thanks for applying to Baddies. You can find your application here <link>. This thread will be used for app discussion. Please feel free to ask any questions.`);
+                                    })
+                                    .catch(console.error);
+                            }).catch(console.error);
+                    }).catch(console.error);
+            }).catch(console.error());
     }
 };
 
 app.get('/discord/receiveUserInfoFromApp/:discordName/:discordNumber/:charName', (request, response) => {
-    const { method, url } = request;
-    const { headers } = request;
+    const {
+        method,
+        url
+    } = request;
+    const {
+        headers
+    } = request;
     let guild = bot.guilds.find(val => val.id === myConfig.guildID);
     if (guild.available) {
-        possibleAppTags.push([request.params.discordName,request.params.discordNumber,request.params.charName]);
+        possibleAppTags.push([request.params.discordName, request.params.discordNumber, request.params.charName]);
         console.log(possibleAppTags);
-		response.send("success");
+        response.send("success");
     }
 });
 
 app.get('/discord/checkUserOnServer', (request, response) => {
-    const { method, url } = request;
-    const { headers } = request;
+    const {
+        method,
+        url
+    } = request;
+    const {
+        headers
+    } = request;
     let guild = bot.guilds.find(val => val.id === myConfig.guildID);
     if (guild.available) {}
 });
 
 app.get('/discord/receiveInsightURLToPostToChannel', (request, response) => {
-    const { method, url } = request;
-    const { headers } = request;
+    const {
+        method,
+        url
+    } = request;
+    const {
+        headers
+    } = request;
     let guild = bot.guilds.find(val => val.id === myConfig.guildID);
     if (guild.available) {}
 });
